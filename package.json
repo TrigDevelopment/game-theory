@@ -12,6 +12,7 @@
     "build": "webpack --config webpack.config.js"
   },
   "dependencies": {
-    "phaser": "^3.22.0"
+    "phaser": "^3.22.0",
+    "ramda": "^0.27.1"
   }
 }
