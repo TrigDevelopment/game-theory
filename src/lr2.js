@@ -11,6 +11,14 @@ function download (filename, text) {
   document.body.removeChild(element);
 }
 
+const params = {
+  a: -6,
+  b: 32 / 5,
+  c: 16,
+  d: -16 / 5,
+  e: -64 / 5
+}
+
 const zeros = n => increasing(n).map(n => 0)
 
 /**
@@ -18,7 +26,6 @@ const zeros = n => increasing(n).map(n => 0)
  */
 function brownRobinson (winMatrix) {
   let size = winMatrix.length
-  let table = 'k;Выбор А;Выбор B;x1;x2;x3;y1;y2;y3;Верхняя цена уср.;Нижняя цена уср.;ε\n'
   let nTimesStrategiesUsedByA = zeros(size)
   let nTimesStrategiesUsedByB = zeros(size)
   let upperCosts = []
@@ -38,14 +45,8 @@ function brownRobinson (winMatrix) {
     lowerCosts.push(lowerGameCost)
     let minUpperCost = Math.min(...upperCosts)
     let maxLowerCost = Math.max(...lowerCosts)
-    let error = upperGameCost - lowerGameCost
     let epsilon = minUpperCost - maxLowerCost
-    table += '' + k + ';'
-      + aStrategy + ';' + bStrategy + ';'
-      + printNumberArr(aWins) + ';' + printNumberArr(bLosses) + ';'
-      + printNumber(upperGameCost) + ';' + printNumber(lowerGameCost) + ';'
-      + printNumber(epsilon) + '\n'
-    if (epsilon <= 0.1) {
+    if (epsilon <= 0.01) {
       gameValue = (minUpperCost + maxLowerCost) / 2
       break
     }
@@ -53,27 +54,6 @@ function brownRobinson (winMatrix) {
 
   let aStrategy = nTimesStrategiesUsedByA.map(n => n / k)
   let bStrategy = nTimesStrategiesUsedByB.map(n => n / k)
-  /*
-  let table2 = 'Номер стратегии:;0;1;2\n'
-  
-  table2 += 'Стратегия игрока А:;' + printNumberArr(aStrategy) + '\n'
-  
-  table2 += 'Стратегия игрока B:;' + printNumberArr(bStrategy) + '\n'
-  let optimalA = [9 / 57, 44 / 57, 4 / 57]
-  table2 += 'Отклонение от оптимальной стратегии А:;'
-  for (let i = 0; i < 3; ++i) {
-    table2 += printNumber(aStrategy[i] - optimalA[i]) +
-      (i === 2 ? '\n' : ';')
-  }
-  let optimalB = [46 / 171, 2 / 9, 29 / 57]
-  table2 += 'Отклонение от оптимальной стратегии B:;'
-  for (let i = 0; i < 3; ++i) {
-    table2 += printNumber(bStrategy[i] - optimalB[i]) +
-      (i === 2 ? '\n' : ';')
-  }
-  */
-  //download('table.csv', table)
-  //download('table2.csv', table2)
   return {
     aStrategy,
     bStrategy,
@@ -112,6 +92,7 @@ function playerBLosses (winMatrix, nTimesStrategiesUsedByA) {
 }
 
 /**
+ * @param {number[][]} winMatrix 
  * @param {number[]} nTimesStrategiesUsedByB 
  */
 function getPlayerAStrategy (winMatrix, nTimesStrategiesUsedByB) {
@@ -120,6 +101,7 @@ function getPlayerAStrategy (winMatrix, nTimesStrategiesUsedByB) {
 }
 
 /**
+ * @param {number[][]} winMatrix 
  * @param {number[]} nTimesStrategiesUsedByA 
  */
 function getPlayerBStrategy (winMatrix, nTimesStrategiesUsedByA) {
@@ -128,6 +110,7 @@ function getPlayerBStrategy (winMatrix, nTimesStrategiesUsedByA) {
 }
 
 /**
+ * Returns indexes of all elements that has max value
  * @param {number[]} arr 
  */
 function indexesOfMaxValues (arr) {
@@ -142,6 +125,7 @@ function indexesOfMaxValues (arr) {
 }
 
 /**
+ * Returns indexes of all elements that has min value
  * @param {number[]} arr 
  */
 function indexesOfMinValues (arr) {
@@ -204,43 +188,18 @@ function randPick (arr) {
 }
 
 /**
- * @param {number[]} arr 
- */
-function printNumberArr (arr) {
-  let str = ''
-  arr.forEach((n, i) => {
-    str += '' + printNumber(n) + (i === arr.length - 1 ? '' : ';')
-  })
-  return str
-}
-
-/**
- * @param {number} n 
- */
-function printNumber (n) {
-  return n.toString().slice(0, 7).replace('.', ',')
-}
-
-const winMatrix1 = [
-  [19, 7, 3],
-  [6, 9, 9],
-  [8, 2, 11]
-]
-
-/**
  * @param {number} x 
  * @param {number} y 
  */
 function kernelFunction (x, y) {
-  let a = -3
-  let b = 3 / 2
-  let c = 18 / 5
-  let d = -18 / 50
-  let e = -72 / 25
-  return a * x * x + b * y * y + c * x * y + d * x + e * y
+  return params.a * x * x
+    + params.b * y * y
+    + params.c * x * y
+    + params.d * x
+    + params.e * y
 }
 
-function matrixColumns(matrix) {
+function matrixColumns (matrix) {
   let columns = []
   let nRows = matrix.length
   let nColumns = matrix[0].length
@@ -257,7 +216,7 @@ function matrixColumns(matrix) {
  * @param {number[][]} winMatrix 
  */
 function getSaddle (winMatrix) {
-  let minsOfRows = winMatrix.map(row => 
+  let minsOfRows = winMatrix.map(row =>
     arrMin(row, x => x))
   let maxesOfColumns = matrixColumns(winMatrix)
     .map(column => arrMax(column, x => x))
@@ -302,7 +261,7 @@ function indexOfMin (arr) {
   var maxIndex = 0;
 
   for (var i = 1; i < arr.length; i++) {
-    if (arr[i] > max) {
+    if (arr[i] < max) {
       maxIndex = i;
       max = arr[i];
     }
@@ -326,37 +285,95 @@ function getWinMatrix (matrixSize) {
 }
 
 /**
- * @param {number} matrixSize 
+ * @param {number[][]} winMatrix 
  */
-function solve (matrixSize) {
-  let winMatrix = getWinMatrix(matrixSize)
+function solveNumerical (winMatrix) {
   let saddle = getSaddle(winMatrix)
   if (saddle === null) {
-    return brownRobinson(winMatrix)
-  } else {
-    console.log('Найдено седло: ')
+    let solution = brownRobinson(winMatrix)
     return {
+      isSaddle: false,
+      aStrategy: indexOfMax(solution.aStrategy),
+      bStrategy: indexOfMax(solution.bStrategy),
+      gameValue: solution.gameValue
+    }
+  } else {
+    return {
+      isSaddle: true,
       aStrategy: saddle.aStrategy,
       bStrategy: saddle.bStrategy,
-      gameValue: winMatrix[saddle.aStrategy, saddle.bStrategy]
+      gameValue: winMatrix[saddle.aStrategy][saddle.bStrategy]
     }
   }
 }
 
-function matrixPrint(matrix) {
+function matrixPrint (matrix) {
   let s = ''
   matrix.map(row => {
-    row.map(n => s += ('' + n + '     ').substring(0, 4) + ' ')
+    row.map(n => s += ('' + n + '     ').substring(0, 6) + ' ')
     s += '\n'
   })
-  console.log(s)
+  return s
+}
+
+function solveAnalytically () {
+  let first = `x=-(${params.c}y+${params.d})/(2*${params.a})`
+  let second = `y=-(${params.c}x+${params.e})/(2*${params.b})`
+  var solution = nerdamer.solveEquations([first, second])
+  console.log(solution)
+  let x = solution[0][1]
+  let y = solution[1][1]
+  let gameValue = kernelFunction(x, y)
+  console.log(gameValue)
+}
+
+/**
+ * @param {number[]} arr 
+ */
+function arrSum (arr) {
+  return arr.reduce((acc, n) => acc + n)
+}
+
+/**
+ * @param {number[]} arr 
+ */
+function arrMean (arr) {
+  return arrSum(arr) / arr.length
+}
+
+/**
+ * Removes element with given [i]
+ * @param {any[]} arr 
+ * @param {number} i
+ */
+function arrRemoveI (arr, i) {
+  arr.splice(i, 1)
 }
 
 function main () {
-  for (let n = 2; n < 10; ++n) {
-    matrixPrint(getWinMatrix(n))
-    console.log(solve(n))
+  let lastGameValues = []
+  let output = ''
+  for (let matrixSize = 2; matrixSize < 12000; ++matrixSize) {
+    let winMatrix = getWinMatrix(matrixSize)
+    output += '*'.repeat(40) + '\n'
+    output += 'Размер матрицы: ' + matrixSize + '. Матрица выигрышей:' + '\n'
+    output += matrixPrint(winMatrix)
+    let solution = solveNumerical(winMatrix)
+    output += solution.isSaddle ?
+      'Найдено седло.' : 'Седло не найдено. Решение методом Брауна-Робинсон'
+    output += '\nx=' + solution.aStrategy / (matrixSize - 1)
+    output += '\ny=' + solution.bStrategy / (matrixSize - 1)
+    output += '\nH=' + solution.gameValue + '\n'
+    if (matrixSize > 5 && Math.abs(arrMean(lastGameValues) - solution.gameValue) < 0.01) {
+      break
+    } else {
+      lastGameValues.push(solution.gameValue)
+      if (lastGameValues.length > 3) {
+        arrRemoveI(lastGameValues, 0)
+      }
+    }
   }
+  download('out.txt', output)
 }
 
 main()
