@@ -1,20 +1,26 @@
-const { download } = require('./download')
+function download (filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
 
-const winMatrix1 = [
-  [19, 7, 3],
-  [6, 9, 9],
-  [8, 2, 11]
-]
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
 
 /**
  * @param {number[][]} winMatrix 
  */
-export function brownRobinson (winMatrix) {
+function brownRobinson (winMatrix) {
   let table = 'k;Выбор А;Выбор B;x1;x2;x3;y1;y2;y3;Верхняя цена уср.;Нижняя цена уср.;ε\n'
   let nTimesStrategiesUsedByA = [0, 0, 0]
   let nTimesStrategiesUsedByB = [0, 0, 0]
   let upperCosts = []
   let lowerCosts = []
+  let gameValue = 0
   let k = 1
   for (; true; ++k) {
     let aStrategy = getPlayerAStrategy(winMatrix, nTimesStrategiesUsedByB)
@@ -37,33 +43,34 @@ export function brownRobinson (winMatrix) {
       + printNumber(upperGameCost) + ';' + printNumber(lowerGameCost) + ';'
       + printNumber(epsilon) + '\n'
     if (epsilon <= 0.1) {
-      console.log(minUpperCost + (minUpperCost - maxLowerCost) / 2)
+      gameValue = (minUpperCost + maxLowerCost) / 2
       break
     }
   }
-  
+
   let table2 = 'Номер стратегии:;0;1;2\n'
-  let aStrategies = nTimesStrategiesUsedByA.map(n => n / k)
-  table2 += 'Стратегия игрока А:;' + printNumberArr(aStrategies) + '\n'
-  let bStrategies = nTimesStrategiesUsedByB.map(n => n / k)
-  table2 += 'Стратегия игрока B:;' + printNumberArr(bStrategies) + '\n'
+  let aStrategy = nTimesStrategiesUsedByA.map(n => n / k)
+  table2 += 'Стратегия игрока А:;' + printNumberArr(aStrategy) + '\n'
+  let bStrategy = nTimesStrategiesUsedByB.map(n => n / k)
+  table2 += 'Стратегия игрока B:;' + printNumberArr(bStrategy) + '\n'
   let optimalA = [9 / 57, 44 / 57, 4 / 57]
   table2 += 'Отклонение от оптимальной стратегии А:;'
   for (let i = 0; i < 3; ++i) {
-    table2 += printNumber(aStrategies[i] - optimalA[i]) + 
+    table2 += printNumber(aStrategy[i] - optimalA[i]) +
       (i === 2 ? '\n' : ';')
   }
   let optimalB = [46 / 171, 2 / 9, 29 / 57]
   table2 += 'Отклонение от оптимальной стратегии B:;'
   for (let i = 0; i < 3; ++i) {
-    table2 += printNumber(bStrategies[i] - optimalB[i]) + 
+    table2 += printNumber(bStrategy[i] - optimalB[i]) +
       (i === 2 ? '\n' : ';')
   }
-  download('table.csv', table)
-  download('table2.csv', table2)
+  //download('table.csv', table)
+  //download('table2.csv', table2)
   return {
-    aStrategy: aStrategies,
-    bStrategy: bStrategies
+    aStrategy,
+    bStrategy,
+    gameValue
   }
 }
 
@@ -73,9 +80,9 @@ export function brownRobinson (winMatrix) {
  */
 function playerAWins (winMatrix, nTimesStrategiesUsedByB) {
   return increasing(3).map(i =>
-    winMatrix1[i][0] * nTimesStrategiesUsedByB[0] +
-    winMatrix1[i][1] * nTimesStrategiesUsedByB[1] +
-    winMatrix1[i][2] * nTimesStrategiesUsedByB[2])
+    winMatrix[i][0] * nTimesStrategiesUsedByB[0] +
+    winMatrix[i][1] * nTimesStrategiesUsedByB[1] +
+    winMatrix[i][2] * nTimesStrategiesUsedByB[2])
 }
 
 /**
@@ -84,9 +91,9 @@ function playerAWins (winMatrix, nTimesStrategiesUsedByB) {
  */
 function playerBLosses (winMatrix, nTimesStrategiesUsedByA) {
   return increasing(3).map(i =>
-    winMatrix1[0][i] * nTimesStrategiesUsedByA[0] +
-    winMatrix1[1][i] * nTimesStrategiesUsedByA[1] +
-    winMatrix1[2][i] * nTimesStrategiesUsedByA[2])
+    winMatrix[0][i] * nTimesStrategiesUsedByA[0] +
+    winMatrix[1][i] * nTimesStrategiesUsedByA[1] +
+    winMatrix[2][i] * nTimesStrategiesUsedByA[2])
 }
 
 /**
@@ -150,9 +157,19 @@ function increasing (n) {
  * @param {T[]} arr 
  * @param {(element: T) => number} f 
  */
-function arrMax (arr, f) {
+export function arrMax (arr, f) {
   return arr.reduce(
     (acc, el) => Math.max(acc, f(el)), f(arr[0]))
+}
+
+/**
+ * @template T
+ * @param {T[]} arr 
+ * @param {(element: T) => number} f 
+ */
+export function arrMin (arr, f) {
+  return arr.reduce(
+    (acc, el) => Math.min(acc, f(el)), f(arr[0]))
 }
 
 /**
@@ -189,4 +206,118 @@ function printNumber (n) {
   return n.toString().slice(0, 7).replace('.', ',')
 }
 
-brownRobinson(winMatrix1)
+const winMatrix1 = [
+  [19, 7, 3],
+  [6, 9, 9],
+  [8, 2, 11]
+]
+//brownRobinson(winMatrix1)
+
+
+/**
+ * @param {number} x 
+ * @param {number} y 
+ */
+function kernelFunction (x, y) {
+  let a = -3
+  let b = 3 / 2
+  let c = 18 / 5
+  let d = -18 / 50
+  let e = -72 / 25
+  return a * x * x + b * y * y + c * x * y + d * x + e * y
+}
+
+/**
+ * @param {number[][]} winMatrix 
+ */
+function getSaddle (winMatrix) {
+  let minsOfRows = []
+  let maxesOfColumns = []
+
+  let maxMinI = indexOfMax(minsOfRows)
+  let minMaxI = indexOfMin(maxesOfColumns)
+
+  if (minsOfRows[maxMinI] === maxesOfColumns[minMaxI]) {
+    return {
+      aStrategy: maxMinI,
+      bStrategy: minMaxI
+    }
+  }
+}
+
+function indexOfMax (arr) {
+  if (arr.length === 0) {
+    return -1;
+  }
+
+  var max = arr[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < arr.length; i++) {
+    if (arr[i] > max) {
+      maxIndex = i;
+      max = arr[i];
+    }
+  }
+
+  return maxIndex;
+}
+
+function indexOfMin (arr) {
+  if (arr.length === 0) {
+    return -1;
+  }
+
+  var max = arr[0];
+  var maxIndex = 0;
+
+  for (var i = 1; i < arr.length; i++) {
+    if (arr[i] > max) {
+      maxIndex = i;
+      max = arr[i];
+    }
+  }
+
+  return maxIndex;
+}
+
+/**
+ * @param {number} matrixSize 
+ */
+function getWinMatrix (matrixSize) {
+  let matrix = []
+  for (let i = 0; i < matrixSize; ++i) {
+    matrix[i] = []
+    for (let j = 0; j < matrixSize; ++j) {
+      matrix[i][j] = kernelFunction(i / (matrixSize - 1), j / (matrixSize - 1))
+    }
+  }
+  return matrix
+}
+
+/**
+ * @param {number} matrixSize 
+ */
+function solve (matrixSize) {
+  let winMatrix = getWinMatrix(matrixSize)
+  let saddle = getSaddle(winMatrix)
+  if (saddle === null) {
+    return brownRobinson(winMatrix)
+  } else {
+    return {
+      aStrategy: saddle.aStrategy,
+      bStrategy: saddle.bStrategy,
+      gameValue: winMatrix[saddle.aStrategy, saddle.bStrategy]
+    }
+  }
+}
+
+function main () {
+  let output = ''
+  for (let n = 2; n < 10; ++n) {
+    output += solve(n)
+  }
+  console.log(output)
+}
+
+main()
