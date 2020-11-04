@@ -189,3 +189,52 @@ function matrixColumns (matrix) {
   }
   return columns
 }
+
+/**
+ * @param {number} min
+ * @param {number} max
+ * @param {number} len
+ */
+function randIntArr (min, max, len) {
+  let arr = []
+  for (let i = 0; i < len; ++i) {
+    arr.push(randInt(min, max))
+  }
+  return arr
+}
+
+/**
+ * @param {number} min 
+ * @param {number} max 
+ * @param {number} size 
+ */
+function randIntSquareMatrix (min, max, size) {
+  return increasing(size)
+    .map(_ => randIntArr(min, max, size))
+}
+
+/**
+ * @template T
+ * @param {T[]} arr 
+ * @param {(el: T) => boolean} pred 
+ */
+function arrAll (arr, pred) {
+  let b = true
+  arr.forEach(x => {
+    if (!pred(x)) {
+      b = false
+    }
+  })
+  return b
+}
+
+/**
+ * Returns sum of `f(x)` on every element of `arr`
+ * @template T
+ * @param {T[]} arr 
+ * @param {(element: T) => number} f
+ */
+function arrSumF (arr, f) {
+  return arr.reduce(
+    (acc, el) => acc + f(el), 0)
+}
