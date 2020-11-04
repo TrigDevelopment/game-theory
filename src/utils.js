@@ -90,11 +90,31 @@ function randInt (min, max) {
 }
 
 /**
- * Returns random element from given [arr]
+ * Returns random element from given `arr` and its index
+ * @param {any[]} arr 
+ */
+function randPickI (arr) {
+  let i = randInt(0, arr.length - 1)
+  let el = arr[i]
+  return { el, i }
+}
+
+/**
+ * Returns random element from given `arr`
  * @param {any[]} arr 
  */
 function randPick (arr) {
-  return arr[randInt(0, arr.length - 1)]
+  return randPickI(arr).el
+}
+
+/**
+ * Appends `what` array to `to` array
+ * @template T
+ * @param {T[]} to 
+ * @param {T[]} what 
+ */
+function arrAppend (to, what) {
+  what.forEach(el => to.push(el))
 }
 
 /**
@@ -154,7 +174,7 @@ function arrMean (arr) {
 }
 
 /**
- * Removes element with given [i]
+ * Removes element with given `i`
  * @param {any[]} arr 
  * @param {number} i
  */
@@ -237,4 +257,74 @@ function arrAll (arr, pred) {
 function arrSumF (arr, f) {
   return arr.reduce(
     (acc, el) => acc + f(el), 0)
+}
+
+/**
+ * Returns [0,1,2,...,n-1]
+ * @param {number} n 
+ */
+function arrInc (n) {
+  let arr = []
+  for (let i = 0; i < n; ++i) {
+    arr.push(i)
+  }
+  return arr
+}
+
+/**
+ * @param {any[]} arr 
+ */
+function arrNEmpty (arr) {
+  return arr.length > 0
+}
+
+/**
+ * 
+ * Returns true iff `arr` is empty
+ * @param {any[]} arr 
+ */
+function arrEmpty (arr) {
+  return !arrNEmpty(arr)
+}
+
+/**
+ * @param {CanvasRenderingContext2D} context 
+ * @param {Rect} rect 
+ * @param {number} lineWidth 
+ */
+function canvasFrame (context, rect, lineWidth) {
+  context.fillRect(rect.x, rect.y, rect.w, rect.h)
+  canvasFillStyled(context, 'white', () =>
+    context.fillRect(
+      rect.x + lineWidth,
+      rect.y + lineWidth,
+      rect.w - 2 * lineWidth,
+      rect.h - 2 * lineWidth))
+}
+
+/**
+ * Changes `context` fill style to `style`, calls `f`, then reverts context fill style
+ * @param {CanvasRenderingContext2D} context 
+ * @param {string} style 
+ * @param {() => any} f 
+ */
+function canvasFillStyled (context, style, f) {
+  let temp = context.fillStyle
+  context.fillStyle = style
+  f()
+  context.fillStyle = temp
+}
+
+/**
+ * @param {CanvasRenderingContext2D} context 
+ * @param {Arrow} arrow 
+ * @param {number} lineWidth 
+ */
+function canvasLine (context, arrow, lineWidth) {
+  context.strokeStyle = 'black'
+  context.beginPath()
+  context.moveTo(arrow.start.x, arrow.start.y)
+  context.lineTo(arrow.end.x, arrow.end.y)
+  context.lineWidth = lineWidth
+  context.stroke()
 }
