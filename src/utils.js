@@ -350,7 +350,7 @@ function canvasTextWidth (context, text) {
  * Returns shallow copy of `arr`
  * @param {any[]} arr 
  */
-function arrShallowCopy(arr){
+function arrShallowCopy (arr) {
   return [].concat(arr)
 }
 
@@ -368,4 +368,18 @@ function arrSome (arr, pred) {
     }
   })
   return b
+}
+
+/**
+ * @param {number} n 
+ */
+function mathFactorial (n) {
+  return n === 0 ? 1 : arrProduct(arrInc(n).map(x => x + 1))
+}
+
+/**
+ * @param {number[]} arr 
+ */
+function arrProduct (arr) {
+  return arr.reduce((acc, x) => acc * x)
 }
