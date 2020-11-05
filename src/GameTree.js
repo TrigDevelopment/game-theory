@@ -12,6 +12,7 @@ class GameNode {
     this.childI = childI
     this.children = children
     this.depth = depth
+    this.isFromRoot = false
   }
   /**
    * @param {Object} args 
@@ -31,23 +32,20 @@ class OptimalWin {
    * @param {number[]} values 
    * @param {number} childI 
    * @param {number} wayId 
-   * @param {boolean} isFromRoot 
    */
-  constructor (values, childI, wayId, isFromRoot) {
+  constructor (values, childI, wayId) {
     this.values = values
     this.childI = childI
     this.wayId = wayId
-    this.isFromRoot = isFromRoot
   }
   /**
    * @param {Object} args 
    * @param {number[]} args.values 
    * @param {number} args.childI 
    * @param {number} args.wayId 
-   * @param {boolean} args.isFromRoot 
    */
   static byNamed (args) {
-    return new OptimalWin(args.values, args.childI, args.wayId, args.isFromRoot)
+    return new OptimalWin(args.values, args.childI, args.wayId)
   }
 }
 
@@ -118,10 +116,9 @@ function setOptimalWinsToLeafs (root) {
   let leafs = getLeafs(root)
   leafs.forEach(leaf => {
     let win = OptimalWin.byNamed({
-      values: arrInc(2).map(_ => Math.random()),
+      values: arrInc(2).map(_ => randInt(0, 20)),
       childI: null,
-      wayId: Math.random(),
-      isFromRoot: false
+      wayId: Math.random()
     })
     leaf.optimalWins = [win]
   })
@@ -177,18 +174,32 @@ function drawNode (node, context, canvasBox) {
   node.children.forEach(child => {
     let childRect = getNodeRect(child, canvasBox)
     let line = new Arrow(rect.center(), childRect.center())
-    canvasLine(context, line, 1)
+    if (child.isFromRoot) {
+      canvasLine(context, line, 5)
+    } else {
+      canvasLine(context, line, 1)
+    }
   })
-  canvasFrame(context, rect, 2)
+  canvasFillStyled(context, playerI(node) === 0 ? 'blue' : 'red', () => {
+    canvasFrame(context, rect, 4)
+  })
+  node.optimalWins.forEach((win, i) => {
+    let text = win.values.toString()
+    let position = new Dot(
+      rect.x + rect.w / 2 - canvasTextWidth(context, text) / 2,
+      rect.y + 32 + i * 30)
+    canvasText(context, text, position)
+  })
 }
 
 /**
  * @param {GameNode} node 
- * @param {Box} canvasBox 
+ * @param {Box} canvasBox
+ * @returns {Rect} 
  */
 function getNodeRect (node, canvasBox) {
   const w = 90
-  const h = 50
+  const h = 100
   if (isRoot(node)) {
     return Rect.byNamed({
       x: canvasBox.w / 2 - w / 2,
@@ -202,8 +213,8 @@ function getNodeRect (node, canvasBox) {
       * Math.pow(2, 8 - node.depth) * 25
       - w / 2
     return Rect.byNamed({
-      x, 
-      y: node.depth * 100,
+      x,
+      y: node.depth * 120,
       w,
       h
     })
@@ -215,4 +226,19 @@ function getNodeRect (node, canvasBox) {
  */
 function isRoot (node) {
   return node.parent === null
+}
+
+/**
+ * @param {GameNode} root 
+ */
+function treeLevelsNodes (root) {
+  let toProceed = [root]
+  let nodes = []
+  while (!arrEmpty(toProceed)) {
+    let node = toProceed[0]
+    nodes.push(node)
+    arrAppend(toProceed, node.children)
+    arrRemoveI(toProceed, 0)
+  }
+  return nodes
 }

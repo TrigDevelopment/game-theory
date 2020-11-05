@@ -328,3 +328,44 @@ function canvasLine (context, arrow, lineWidth) {
   context.lineWidth = lineWidth
   context.stroke()
 }
+
+/**
+ * @param {CanvasRenderingContext2D} context 
+ * @param {string} text 
+ * @param {Dot} position 
+ */
+function canvasText (context, text, position) {
+  context.fillText(text, position.x, position.y)
+}
+
+/**
+ * @param {CanvasRenderingContext2D} context 
+ * @param {string} text 
+ */
+function canvasTextWidth (context, text) {
+  return context.measureText(text).width
+}
+
+/**
+ * Returns shallow copy of `arr`
+ * @param {any[]} arr 
+ */
+function arrShallowCopy(arr){
+  return [].concat(arr)
+}
+
+/**
+ * Returns true iff some element of `arr` is `pred`
+ * @template T
+ * @param {T[]} arr 
+ * @param {(el: T) => boolean} pred 
+ */
+function arrSome (arr, pred) {
+  let b = false
+  arr.forEach(x => {
+    if (pred(x)) {
+      b = true
+    }
+  })
+  return b
+}
