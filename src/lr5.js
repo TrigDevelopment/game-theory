@@ -10,8 +10,8 @@ function myCharacteristicFunction (coalition) {
   return fixdValues[coalitionI]
 }
 
-console.log('Супераддитивность ' + isSuperAdditive(myCharacteristicFunction))
-console.log('Выпуклость ' + isBulb(myCharacteristicFunction))
+console.log('Супераддитивность ' + checkIsSuperAdditive(myCharacteristicFunction).condition)
+console.log('Выпуклость ' + checkIsBulb(myCharacteristicFunction).condition)
 console.log('Вектор Шепли: ')
 let sheplyVector = getSheplyVector(myCharacteristicFunction)
 console.log(sheplyVector)
@@ -20,37 +20,66 @@ console.log('Условие групповой рационализации: '
 console.log('Условие индивидуальной рационализации: '
   + isIndividualRational(myCharacteristicFunction, sheplyVector))
 
+download('out.txt', checkIsBulb(myCharacteristicFunction).log)
+
 /**
- * @param {(coalition: boolean[]) => number} characteristicF
+ * @param {boolean[]} coalition 
  */
-function isSuperAdditive (characteristicF) {
-  let notIntersectingPairs =
-    arrCrossProduct(allCoalitions(nPlayers), allCoalitions(nPlayers))
-      .filter(pair => !isIntersect(pair[0], pair[1]))
-  return arrAll(notIntersectingPairs,
-    pair => {
-      let coalition1 = pair[0]
-      let coalition2 = pair[1]
-      let union = getUnion(coalition1, coalition2)
-      let condition = characteristicF(union) >=
-        characteristicF(pair[0]) + characteristicF(pair[1])
-      if (!condition) {
-        console.log(pair)
-        console.log(characteristicF(pair[0]))
-        console.log(characteristicF(pair[1]))
-      }
-      return condition
-    })
+function coalitionToString (coalition) {
+  let playerIndexes = arrIndexes(coalition, x => x).map(x => x + 1)
+  if (playerIndexes.length === 0) {
+    return '∅'
+  } else {
+    return playerIndexes.toString()
+  }
 }
 
 /**
  * @param {(coalition: boolean[]) => number} characteristicF
  */
-function isBulb (characteristicF) {
-  return arrAll(arrCrossProduct(allCoalitions(nPlayers), allCoalitions(nPlayers)), pair =>
-    characteristicF(getUnion(pair[0], pair[1]))
-    + characteristicF(intersection(pair[0], pair[1]))
-    >= characteristicF(pair[0]) + characteristicF(pair[1]))
+function checkIsSuperAdditive (characteristicF) {
+  let notIntersectingPairs =
+    arrCrossProduct(allCoalitions(nPlayers), allCoalitions(nPlayers))
+      .filter(pair => !isIntersect(pair[0], pair[1]))
+  let log = ''
+  let isSuperAdditive = arrAll(notIntersectingPairs,
+    ([coalition1, coalition2]) => {
+      let union = getUnion(coalition1, coalition2)
+      let condition = characteristicF(union) >=
+        characteristicF(coalition1) + characteristicF(coalition2)
+      log += 'Первая: ' + coalitionToString(coalition1) + '\n'
+      log += 'Вторая: ' + coalitionToString(coalition2) + '\n'
+      log += `${characteristicF(union)} ≥ ${characteristicF(coalition1)} + ${characteristicF(coalition2)}\n`
+      log += condition ? 'Выполнено\n\n' : 'Не выполнено\n\n'
+      return condition
+    })
+  return {
+    condition: isSuperAdditive,
+    log
+  }
+}
+
+/**
+ * @param {(coalition: boolean[]) => number} characteristicF
+ */
+function checkIsBulb (characteristicF) {
+  let log = ''
+  let condition = arrAll(arrCrossProduct(allCoalitions(nPlayers), allCoalitions(nPlayers)),
+    ([coalition1, coalition2]) => {
+      let union = getUnion(coalition1, coalition2)
+      let intersect = intersection(coalition1, coalition2)
+      let bulb = characteristicF(union) + characteristicF(intersect)
+        >= characteristicF(coalition1) + characteristicF(coalition2)
+      log += 'Первая: ' + coalitionToString(coalition1) + '\n'
+      log += 'Вторая: ' + coalitionToString(coalition2) + '\n'
+      log += `${characteristicF(union)} + ${characteristicF(intersect)} ≥ ${characteristicF(coalition1)} + ${characteristicF(coalition2)}\n`
+      log += bulb ? 'Выполнено\n\n' : 'Не выполнено\n\n'
+      return bulb
+    })
+  return {
+    condition,
+    log
+  }
 }
 
 /**

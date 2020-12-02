@@ -56,9 +56,15 @@ function tenSized () {
 }
 
 function crossRoad () {
-  const aWins = [[1, 0.99], [2, 0]]
-  const bWins = [[1, 2], [0.99, 0]]
+  const aWins = [[-1, -1], [0, -100]]
+  const bWins = [[-1, 0], [-1, -100]]
   return 'Перекрёсток:\n' + biMatrixToString(aWins, bWins)
+}
+
+function shiftedCrossRoad () {
+  const aWins = [[-1, -1], [0, -100]]
+  const bWins = [[-5, 0], [-5, -100]]
+  return 'Перекрёсток со смещением:\n' + biMatrixToString(aWins, bWins)
 }
 
 function family () {
@@ -79,12 +85,11 @@ function twoSized () {
   return '2x2:\n' + biMatrixToString(aWins, bWins)
 }
 
-function mixedNash () {
-  const aWins = [[5, 10.001], [8, 6]]
-  const bWins = [[1, 4.001], [6, 9]]
+function tutoral2x2 () {
+  const aWins = [[3, 5], [9, 2]]
+  const bWins = [[1, 0], [6, 3]]
   const aInverse = math.inv(aWins)
   const bInverse = math.inv(bWins)
-  console.log(bInverse)
   let v1 = 1 / arrSumF(aInverse, row => arrSum(row))
   let v2 = 1 / arrSumF(bInverse, row => arrSum(row))
   let x = [bInverse[0][0] + bInverse[1][0], bInverse[0][1] + bInverse[1][1]]
@@ -94,13 +99,68 @@ function mixedNash () {
   return { v1, v2, x, y }
 }
 
+/**
+ * @param {number[][]} aWins 
+ * @param {number[][]} bWins 
+ */
+function findDominatingStrategy (aWins, bWins) {
+  if (aWins.every(arr => arr[0] < arr[1])) {
+    return {
+      xStrategyI: 1,
+      yStrategyI: bWins[1][0] > bWins[1][1] ? 0 : 1
+    }
+  } else if (aWins.every(arr => arr[0] > arr[1])) {
+    return {
+      xStrategyI: 0,
+      yStrategyI: bWins[0][0] > bWins[0][1] ? 0 : 1
+    }
+  } else if (bWins.every(arr => arr[0] < arr[1])) {
+    return {
+      xStrategyI: aWins[1][0] > aWins[1][1] ? 0 : 1,
+      yStrategyI: 1
+    }
+  } else if (bWins.every(arr => arr[0] > arr[1])) {
+    return {
+      xStrategyI: aWins[0][0] > aWins[0][1] ? 0 : 1,
+      yStrategyI: 0
+    }
+  } else {
+    return null
+  }
+}
+
+function mixedNash () {
+  const aWins = [[5, 10], [8, 6]]
+  const bWins = [[1, 4], [6, 9]]
+  const dominating = findDominatingStrategy(aWins, bWins)
+  if (dominating !== null) {
+    const xI = dominating.xStrategyI
+    const yI = dominating.yStrategyI
+    return {
+      v1: aWins[xI][yI],
+      v2: bWins[xI][yI],
+      x: xI === 0 ? [1, 0] : [0, 1],
+      y: yI === 0 ? [1, 0] : [0, 1]
+    }
+  } else {
+    const aInverse = math.inv(aWins)
+    const bInverse = math.inv(bWins)
+    let v1 = 1 / arrSumF(aInverse, row => arrSum(row))
+    let v2 = 1 / arrSumF(bInverse, row => arrSum(row))
+    let x = [bInverse[0][0] + bInverse[1][0], bInverse[0][1] + bInverse[1][1]]
+      .map(n => n * v2)
+    let y = [aInverse[0][0] + aInverse[0][1], aInverse[1][0] + aInverse[1][1]]
+      .map(n => n * v1)
+    return { v1, v2, x, y }
+  }
+}
+
 let output = tenSized() + '\n' +
   crossRoad() + '\n' +
+  shiftedCrossRoad() + '\n' +
   family() + '\n' +
   prisonerDilemma() + '\n' +
   twoSized() + '\n'
 console.log(mixedNash())
+console.log(tutoral2x2())
 download('output.txt', output)
-
-
-

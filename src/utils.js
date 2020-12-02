@@ -188,10 +188,21 @@ function arrRemoveI (arr, i) {
 function matrixToString (matrix) {
   let s = ''
   matrix.map(row => {
-    row.map(n => s += ('' + n + '     ').substring(0, 6) + ' ')
+    row.map(n => s += ('' + n + '     ').substring(0, 5) + ' ')
     s += '\n'
   })
   return s
+}
+
+/**
+ * @param {number[]} vector 
+ */
+function vectorToString (vector) {
+  let s = ''
+  vector.forEach(n => {
+    s += ('' + n + '     ').substring(0, 5) + ' '
+  })
+  return s + '\n'
 }
 
 /**
@@ -383,3 +394,73 @@ function mathFactorial (n) {
 function arrProduct (arr) {
   return arr.reduce((acc, x) => acc * x)
 }
+
+/**
+ * Returns sum of deviations from mean value
+ * @param {number[]} arr 
+ */
+function arrDeviationSum (arr) {
+  let mean = arrMean(arr)
+  return arrSumF(arr, x => mathDelta(x, mean))
+}
+
+/**
+ * @param {number} a 
+ * @param {number} b 
+ */
+function mathDelta (a, b) {
+  return Math.abs(a - b)
+}
+
+/**
+ * Returns indexes of all elements from given `arr` that are `predicate`
+ * @template T
+ * @param {T[]} arr 
+ * @param {(element: T) => boolean} predicate 
+ */
+function arrIndexes (arr, predicate) {
+  return arr.filter((el, i) => predicate(el) ? i : null)
+    .map((_, i) => i)
+}
+
+/**
+ * Returns array with elements from `arr` that have specified `indexes`
+ * @template T
+ * @param {T[]} arr 
+ * @param {number[]} indexes 
+ */
+const arrSubset = (arr, indexes) =>
+  indexes.map(i => arr[i])
+
+/**
+ * Returns many random elements from given `arr`
+ * @template T
+ * @param {T[]} arr 
+ * @param {number} nElementsToPick
+ */
+function randPickMany (arr, nElementsToPick) {
+  /** @type {Set<number>} */
+  let indexes = new Set()
+  while (indexes.size < nElementsToPick && indexes.size < arr.length) {
+    indexes.add(randPickI(arr).i)
+  }
+  return arrSubset(arr, Array.from(indexes))
+}
+
+/**
+ * Returns true iff array has element
+ * @template T
+ * @param {T[]} arr 
+ * @param {T} el 
+ */
+const arrHas = (arr, el) =>
+  arr.find(e => e === el) !== undefined
+
+/**
+ * Returns `arr` without elements that exist in `except` array
+ * @template T
+ * @param {T[]} arr 
+ * @param {T[]} except 
+ */
+const arrExcept = (arr, except) =>
+  arr.filter(el => !arrHas(except, el))

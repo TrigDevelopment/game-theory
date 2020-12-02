@@ -3,7 +3,7 @@ module.exports = {
   mode: 'development',
   //mode: 'production',
   entry: {
-    index: './src/lr2.js',
+    index: './src/rk.js',
   },
   target: 'web',
   output: {

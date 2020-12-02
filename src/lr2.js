@@ -109,15 +109,6 @@ function arrSumF (arr, f) {
     (acc, el) => acc + f(el), 0)
 }
 
-/**
- * Returns sum of deviations from mean value
- * @param {number[]} arr 
- */
-function arrDeviationSum (arr) {
-  let mean = arrMean(arr)
-  return arrSumF(arr, x => Math.abs(x - mean))
-}
-
 const nLastSolutionsInStopCriteria = 5
 
 /**

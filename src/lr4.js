@@ -42,6 +42,7 @@ function playerI (node) {
 }
 
 /**
+ * Отмечает пути, которые исходят из корня
  * @param {GameNode} root 
  */
 function markFromRoot (root) {
@@ -49,6 +50,9 @@ function markFromRoot (root) {
   while (!arrEmpty(toProceed)) {
     let node = toProceed[0]
     node.isFromRoot = true
+
+    // Добавляем в массив вершин для обработки те дочерние вершины,
+    // через которые проходит путь, исходящий из корня
     let childrenToProceed =
       node.children.filter(child =>
         arrSome(child.optimalWins, childWin =>

@@ -70,6 +70,7 @@ function generateGameTree (depth, nNodes) {
 }
 
 /**
+ * Создаёт путь длины `depth` дерева
  * @param {number} depth 
  */
 function generateMainBranch (depth) {
@@ -110,6 +111,7 @@ function appendNewChildren (node) {
 }
 
 /**
+ * Задаёт случайные выигрыши листовым вершинам
  * @param {GameNode} root 
  */
 function setOptimalWinsToLeafs (root) {
@@ -212,12 +214,7 @@ function getNodeRect (node, canvasBox) {
     let x = parentRect.center().x + (node.childI === 0 ? -1 : 1)
       * Math.pow(2, 8 - node.depth) * 25
       - w / 2
-    return Rect.byNamed({
-      x,
-      y: node.depth * 120,
-      w,
-      h
-    })
+    return Rect.byNamed({ x, y: node.depth * 120, w, h })
   }
 }
 
@@ -229,6 +226,8 @@ function isRoot (node) {
 }
 
 /**
+ * Возвращает вершины дерева, корнем которого является `root`,
+ * в порядке breadth-first, то есть по уровням.
  * @param {GameNode} root 
  */
 function treeLevelsNodes (root) {

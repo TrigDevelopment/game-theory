@@ -6,7 +6,15 @@
     {
       "label": "compilejs",
       "type": "shell",
-      "command": "npx webpack --config webpack.config.js"
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
+      "command": "start firefox localhost:8080"
     },
     {
       "label": "runserver",
@@ -14,7 +22,15 @@
       "command": "http-server &",
       "runOptions": {
         "runOn": "folderOpen"
-      }
+      },
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      },
     }
   ]
 }
